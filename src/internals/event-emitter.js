@@ -1,7 +1,6 @@
 /**
  * Minimal event emitter.
- * Replaces the small subset of qx.event / qx.core.Object events used by desk-ui:
- * on/once/off and fire (used for 'changeReady', 'update', 'log', 'actionEvent', ...).
+ * Provides on/once/off and emit, used for 'changeReady', 'update', 'log', 'actionEvent', ...
  * Internal: not exported from the package index.
  */
 export function EventEmitter () {

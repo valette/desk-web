@@ -1,7 +1,7 @@
 /**
  * DOM / browser helpers.
- * Replaces the small subset of qx.bom / qx.io / qx.util used by desk-ui's core
- * (Xhr, request.Script, Cookie, Base64). Internal: not exported from the package index.
+ * Provides the browser helpers (Xhr, request.Script, Cookie, Base64).
+ * Internal: not exported from the package index.
  */
 
 /**
@@ -63,7 +63,7 @@ export function getCookie ( name ) {
 }
 
 /**
- * Base64-encodes a string (replaces qx.util.Base64.encode(str, true) without line breaks).
+ * Base64-encodes a string without line breaks.
  * @param {string} str
  * @returns {string}
  */

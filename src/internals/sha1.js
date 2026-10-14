@@ -1,7 +1,6 @@
 /**
  * SHA-1 helper built on the native Web Crypto API.
- * Replaces the synchronous require('crypto').createHash('SHA1') used by desk-ui,
- * which is not available in browsers. Async because crypto.subtle is async.
+ * Async because crypto.subtle is async.
  * Internal: not exported from the package index.
  */
 

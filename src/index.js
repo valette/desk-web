@@ -1,7 +1,7 @@
 /**
- * desk-web — pure JavaScript client library for the DESK server (no Qooxdoo).
+ * desk-web — pure JavaScript client library for the DESK server.
  *
- * Exports the non-UI core of desk-ui as promise-based, ES-module singletons.
+ * Exports the non-UI core as promise-based, ES-module singletons.
  * No globals are created on `window`.
  */
 export { Actions } from './actions.js';

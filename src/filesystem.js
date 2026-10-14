@@ -1,6 +1,5 @@
 /**
  * Pure-JS virtual file system for the DESK server.
- * Promise-based port of desk-ui's desk.FileSystem (no Qooxdoo).
  * Reads use fetch; writes and directory operations use the RPC action engine (Actions.execute).
  */
 import { Actions } from './actions.js';
@@ -260,59 +259,6 @@ class FileSystemManager {
 		a.download = downloadName || this.getFileName( file );
 		a.click();
 		document.body.removeChild( a );
-	}
-
-	/**
-	 * Returns the directory for the given file, session type and Id.
-	 * @param file {String} file path
-	 * @param sessionType {String} session type
-	 * @param sessionId {Number} session Id
-	 * @returns {String} directory path
-	 */
-	getSessionDirectory ( file, sessionType, sessionId ) {
-		return file + '.' + sessionType + '.' + sessionId;
-	}
-
-	/**
-	 * Lists the existing sessions (directories) of the given type for a file.
-	 * @param file {String} file path
-	 * @param sessionType {String} session type
-	 * @returns {Promise<Array<Number>>} session ids, descending
-	 */
-	async getFileSessions ( file, sessionType ) {
-		const directory = this.getFileDirectory( file );
-		const shortFileName = this.getFileName( file );
-		const files = await this.readDir( directory );
-		const sessions = [];
-		for ( const child of files ) {
-			const childName = child.name;
-			if ( !child.isDirectory ) continue;
-			if ( !childName.startsWith( shortFileName + '.' ) ) continue;
-			const remaining = childName.substring( shortFileName.length + 1 );
-			if ( remaining.startsWith( sessionType + '.' ) ) {
-				sessions.push( parseInt( remaining.substring( sessionType.length + 1 ), 10 ) );
-			}
-		}
-		return sessions.sort( ( a, b ) => b - a );
-	}
-
-	/**
-	 * Creates a new session for a file of the given type.
-	 * @param file {String} file path
-	 * @param sessionType {String} session type
-	 * @returns {Promise<Number>} the new session id
-	 */
-	async createNewSession ( file, sessionType ) {
-		const sessions = await this.getFileSessions( file, sessionType );
-		const newSessionId = sessions.length ? Math.max( ...sessions ) + 1 : 0;
-		const lastSlash = file.lastIndexOf( '/' );
-		const subdir = file.substring( lastSlash + 1 ) + '.' + sessionType + '.' + newSessionId;
-		await Actions.execute( {
-			action : 'add_subdirectory',
-			subdirectory_name : subdir,
-			output_directory : file.substring( 0, lastSlash )
-		} );
-		return newSessionId;
 	}
 }
 

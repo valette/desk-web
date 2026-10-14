@@ -1,6 +1,5 @@
 /**
  * Singleton helper class for parsing URL parameters.
- * Pure-JS port of desk-ui's desk.URLParameters (no Qooxdoo).
  */
 class URLParametersManager {
 	constructor () {

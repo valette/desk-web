@@ -1,6 +1,6 @@
 /**
  * Pure-JS RPC action dispatcher for the DESK server.
- * Promise-based port of desk-ui's desk.Actions core (no Qooxdoo, no UI).
+ * Promise-based, UI-free.
  *
  * Transports:
  *  - "node"  : Socket.IO client to a running desk server (default).
