@@ -107,11 +107,11 @@ class ActionsManager extends EventEmitter {
 	}
 
 	async __initStatic () {
-		const { readFile } = await import( './filesystem.js' );
+		const { FileSystem } = await import( './filesystem.js' );
 		this.__engine = 'static';
 		const [ settings, cache ] = await Promise.all( [
-			readFile( 'actions.json', { forceText : true } ).then( JSON.parse ).catch( () => ( {} ) ),
-			readFile( 'cache/responses.json', { forceText : true } ).then( JSON.parse ).catch( () => null )
+			FileSystem.readFile( 'actions.json', { forceText : true } ).then( JSON.parse ).catch( () => ( {} ) ),
+			FileSystem.readFile( 'cache/responses.json', { forceText : true } ).then( JSON.parse ).catch( () => null )
 		] );
 		this.__recordedActions = cache ? cache.actions : null;
 		this.__setSettings( settings );
@@ -175,7 +175,7 @@ class ActionsManager extends EventEmitter {
 		promise.stream = cb => { listeners.add( cb ); return promise; };
 		promise.kill = () => {
 			if ( settled ) return Promise.resolve( {} );
-			return ActionsManager.execute( { manage : 'kill', actionHandle : handle } );
+			return this.execute( { manage : 'kill', actionHandle : handle } );
 		};
 		return promise;
 	}
@@ -224,9 +224,9 @@ class ActionsManager extends EventEmitter {
 	 */
 	async includeInitScripts ( init ) {
 		if ( !init ) return;
-		const { getFileURL } = await import( './filesystem.js' );
+		const { FileSystem } = await import( './filesystem.js' );
 		await Promise.all( ( init || [] ).map( async file => {
-			const url = getFileURL( file );
+			const url = FileSystem.getFileURL( file );
 			await loadScript( url );
 		} ) );
 	}

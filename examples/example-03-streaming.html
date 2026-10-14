@@ -12,8 +12,8 @@
 <body>
 <h1>desk-web : execute an action with streaming output</h1>
 <p>Optional URL params: <code>?baseURL=...&amp;username=...&amp;password=...</code></p>
-<label>action <input id="action" value="system" style="width:30em"></label>
-<label>args <input id="args" value="{&quot;command&quot;:&quot;seq 1 5&quot;}" style="width:20em"></label>
+<label>action <input id="action" value="sleep" style="width:30em"></label>
+<label>args <input id="args" value="{&quot;time_in_seconds&quot;:10}" style="width:20em"></label>
 <button id="run">Run (stream)</button>
 <button id="kill">Kill</button>
 <pre id="out">connect first, then run...</pre>

@@ -79,6 +79,17 @@ test( 'desk-web works against a live desk server (DESK_ROOTDIR)', async () => {
 		const res = await Actions.execute( { action : 'pwd', text : ' ' } );
 		assert.ok( res, 'pwd resolved' );
 
+		// The desk-web test pages are served by the desk server at /web/... via
+		// the "web" dataDir declared in desk/extensions/desk-web.json.
+		const auth = 'Basic ' + Buffer.from( process.env.USER + ':password' ).toString( 'base64' );
+		const page = await fetch( baseURL + 'web/example-01-actions.html', { headers : { Authorization : auth } } );
+		assert.strictEqual( page.status, 200, 'example page served at /web/' );
+		const html = await page.text();
+		assert.ok( html.includes( 'desk-web.mjs' ), 'page imports ./desk-web.mjs' );
+
+		const bundle = await fetch( baseURL + 'web/desk-web.mjs', { headers : { Authorization : auth } } );
+		assert.strictEqual( bundle.status, 200, 'bundle served at /web/desk-web.mjs' );
+
 		// Promise reject + kill functionality
 		const run = Actions.execute( { action : 'sleep', time_in_seconds : 10 }, { stream : true } );
 		setTimeout( () => run.kill(), 500 );

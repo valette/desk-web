@@ -148,8 +148,15 @@ npx serve .
 # then open http://localhost:3000/examples/example-01-actions.html?baseURL=...&username=...&password=...
 ```
 
-The desk server itself can serve these by placing them under an exposed
-directory (e.g. `data/`).
+The desk server itself can serve these at `/web/...`: `npm run build` copies
+each example page into `dist/` (rewriting its bundle import to `./desk-web.mjs`,
+which sits next to it), and a `web` dataDir declared in the desk server's
+`extensions/desk-web.json` points at `dist/`. After `npm run build` in
+`desk-web`, start the desk server and open
+`http://localhost:PORT/web/example-01-actions.html?username=...&password=...`.
+No express route or extra server dependency is required — the pages and bundle
+are served as ordinary static files through the desk server's exposed
+directories.
 
 ## Development
 

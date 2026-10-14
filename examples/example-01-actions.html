@@ -13,7 +13,7 @@
 <h1>desk-web : connect and list actions</h1>
 <p>Optional URL params: <code>?baseURL=...&amp;username=...&amp;password=...</code></p>
 <button id="connect">Connect</button>
-<button id="run">Run first void action</button>
+<button id="run">Run cpuLoad</button>
 <pre id="out">click "Connect"...</pre>
 
 <script type="module">
@@ -35,7 +35,7 @@
 	};
 
 	document.getElementById( 'run' ).onclick = async () => {
-		const name = Object.keys( Actions.getSettings().actions )[ 0 ];
+		const name = 'cpuLoad';
 		try {
 			const res = await Actions.execute( { action : name } );
 			out.textContent += '\n\nexecuted "' + name + '":\n' + JSON.stringify( res, null, 2 );
