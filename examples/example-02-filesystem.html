@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>desk-web example 2 : filesystem</title>
+<style>
+	body { font-family: sans-serif; margin: 2em; }
+	pre { background: #f4f4f4; padding: 1em; overflow: auto; max-height: 60vh; }
+	button { margin-right: .5em; }
+</style>
+</head>
+<body>
+<h1>desk-web : virtual filesystem</h1>
+<p>Optional URL params: <code>?baseURL=...&amp;username=...&amp;password=...</code></p>
+<label>directory <input id="dir" value="data"></label>
+<button id="connect">Connect &amp; list</button>
+<button id="write">Write a file</button>
+<pre id="out">click "Connect &amp; list"...</pre>
+
+<script type="module">
+	import { Actions, FileSystem } from '../dist/desk-web.mjs';
+
+	const out = document.getElementById( 'out' );
+	const params = new URLSearchParams( location.search );
+
+	document.getElementById( 'connect' ).onclick = async () => {
+		await Actions.connect( {
+			baseURL : params.get( 'baseURL' ) || undefined,
+			username : params.get( 'username' ) || undefined,
+			password : params.get( 'password' ) || undefined
+		} );
+		const dir = document.getElementById( 'dir' ).value;
+		const files = await FileSystem.readDir( dir );
+		out.textContent = 'listing "' + dir + '":\n'
+			+ files.map( f => ( f.isDirectory ? 'dir  ' : 'file ' ) + f.name ).join( '\n' );
+	};
+
+	document.getElementById( 'write' ).onclick = async () => {
+		await FileSystem.writeFile( 'data/hello-desk-web.txt', 'hello from desk-web!\n' );
+		const content = await FileSystem.readFile( 'data/hello-desk-web.txt' );
+		out.textContent += '\n\nread back "data/hello-desk-web.txt":\n' + content;
+	};
+</script>
+</body>
+</html>

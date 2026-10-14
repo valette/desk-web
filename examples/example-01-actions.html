@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>desk-web example 1 : actions</title>
+<style>
+	body { font-family: sans-serif; margin: 2em; }
+	pre { background: #f4f4f4; padding: 1em; overflow: auto; max-height: 60vh; }
+	button { margin-right: .5em; }
+</style>
+</head>
+<body>
+<h1>desk-web : connect and list actions</h1>
+<p>Optional URL params: <code>?baseURL=...&amp;username=...&amp;password=...</code></p>
+<button id="connect">Connect</button>
+<button id="run">Run first void action</button>
+<pre id="out">click "Connect"...</pre>
+
+<script type="module">
+	import { Actions } from '../dist/desk-web.mjs';
+
+	const out = document.getElementById( 'out' );
+	const params = new URLSearchParams( location.search );
+	const opts = {
+		baseURL : params.get( 'baseURL' ) || undefined,
+		username : params.get( 'username' ) || undefined,
+		password : params.get( 'password' ) || undefined
+	};
+
+	document.getElementById( 'connect' ).onclick = async () => {
+		out.textContent = 'connecting...';
+		await Actions.connect( opts );
+		out.textContent = 'connected.\n\navailable actions:\n'
+			+ Object.keys( Actions.getSettings().actions ).join( '\n' );
+	};
+
+	document.getElementById( 'run' ).onclick = async () => {
+		const name = Object.keys( Actions.getSettings().actions )[ 0 ];
+		try {
+			const res = await Actions.execute( { action : name } );
+			out.textContent += '\n\nexecuted "' + name + '":\n' + JSON.stringify( res, null, 2 );
+		} catch ( e ) {
+			out.textContent += '\n\nerror running "' + name + '":\n' + e.message;
+		}
+	};
+</script>
+</body>
+</html>

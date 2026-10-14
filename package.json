@@ -1,0 +1,32 @@
+{
+  "name": "desk-web",
+  "description": "Pure JavaScript (no Qooxdoo) client library for the DESK remote desktop server: RPC action execution and virtual file system.",
+  "version": "0.1.0",
+  "license": "CECILL-B",
+  "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
+  "type": "module",
+  "main": "./dist/desk-web.cjs",
+  "module": "./dist/desk-web.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/desk-web.mjs",
+      "require": "./dist/desk-web.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test \"test/*.test.js\"",
+    "test:integration": "node --test scripts/test-integration.cjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "socket.io-client": "4.8.4"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}

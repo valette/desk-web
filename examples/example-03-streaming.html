@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>desk-web example 3 : streaming</title>
+<style>
+	body { font-family: sans-serif; margin: 2em; }
+	pre { background: #f4f4f4; padding: 1em; overflow: auto; max-height: 60vh; white-space: pre-wrap; }
+	button { margin-right: .5em; }
+</style>
+</head>
+<body>
+<h1>desk-web : execute an action with streaming output</h1>
+<p>Optional URL params: <code>?baseURL=...&amp;username=...&amp;password=...</code></p>
+<label>action <input id="action" value="system" style="width:30em"></label>
+<label>args <input id="args" value="{&quot;command&quot;:&quot;seq 1 5&quot;}" style="width:20em"></label>
+<button id="run">Run (stream)</button>
+<button id="kill">Kill</button>
+<pre id="out">connect first, then run...</pre>
+
+<script type="module">
+	import { Actions } from '../dist/desk-web.mjs';
+
+	const out = document.getElementById( 'out' );
+	const params = new URLSearchParams( location.search );
+
+	await Actions.connect( {
+		baseURL : params.get( 'baseURL' ) || undefined,
+		username : params.get( 'username' ) || undefined,
+		password : params.get( 'password' ) || undefined
+	} );
+	out.textContent = 'connected.\n';
+
+	let current = null;
+
+	document.getElementById( 'run' ).onclick = async () => {
+		const action = document.getElementById( 'action' ).value;
+		const args = JSON.parse( document.getElementById( 'args' ).value );
+		const name = Actions.getAction( action );
+		out.textContent += '\n> ' + action + ' ' + JSON.stringify( args ) + '\n';
+
+		const run = Actions.execute( { action, ...args }, { stream : true } );
+
+		// cancel previous run if any
+		if ( current ) current.kill();
+		current = run;
+
+		run.stream( msg => {
+			if ( msg.type === 'stdout' ) out.textContent += msg.data;
+			else if ( msg.type === 'stderr' ) out.textContent += '[err] ' + msg.data;
+		} );
+
+		try {
+			const res = await run;
+			out.textContent += '\n[finished] status ' + res.status + '\n';
+		} catch ( e ) {
+			out.textContent += '\n[error] ' + e.message + ( e.killed ? ' (killed)' : '' ) + '\n';
+		}
+	};
+
+	document.getElementById( 'kill' ).onclick = async () => {
+		if ( current ) { await current.kill(); out.textContent += '\n[kill sent]\n'; }
+	};
+</script>
+</body>
+</html>
