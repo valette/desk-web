@@ -39,16 +39,16 @@
 		const name = Actions.getAction( action );
 		out.textContent += '\n> ' + action + ' ' + JSON.stringify( args ) + '\n';
 
-		const run = Actions.execute( { action, ...args }, { stream : true } );
+		const run = Actions.execute( { action, ...args }, {
+			listener : msg => {
+				if ( msg.type === 'stdout' ) out.textContent += msg.data;
+				else if ( msg.type === 'stderr' ) out.textContent += '[err] ' + msg.data;
+			}
+		} );
 
 		// cancel previous run if any
 		if ( current ) current.kill();
 		current = run;
-
-		run.stream( msg => {
-			if ( msg.type === 'stdout' ) out.textContent += msg.data;
-			else if ( msg.type === 'stderr' ) out.textContent += '[err] ' + msg.data;
-		} );
 
 		try {
 			const res = await run;

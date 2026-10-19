@@ -79,6 +79,31 @@ test( 'desk-web works against a live desk server (DESK_ROOTDIR)', async () => {
 		const res = await Actions.execute( { action : 'pwd', text : ' ' } );
 		assert.ok( res, 'pwd resolved' );
 
+		// Streaming output is launch-time only: pass a listener to receive
+		// actionEvent (stdout/stderr/outputDirectory) messages for the run.
+		const chunks = [];
+		const srun = Actions.execute( { action : 'pwd', text : ' ' }, {
+			listener : msg => { if ( msg.type === 'stdout' ) chunks.push( msg.data ); }
+		} );
+		await srun;
+		assert.ok( chunks.length > 0 && chunks.join( '' ).trim().length > 0,
+			'received stdout stream (' + chunks.join( '' ).trim() + ')' );
+
+		// Cached actions stream nothing live: the server returns status 'CACHED'
+		// and desk-web must replay the persisted action.log to the listener.
+		await Actions.execute( { action : 'pwd', text : ' ' } ); // prime the cache
+		const cached = [];
+		const crun = Actions.execute( { action : 'pwd', text : ' ' }, {
+			listener : msg => {
+				if ( msg.type === 'outputDirectory' ) cached.push( 'dir:' + !!msg.data );
+				else if ( msg.type === 'stdout' ) cached.push( msg.data );
+			}
+		} );
+		const cres = await crun;
+		assert.strictEqual( cres.status, 'CACHED', 'second pwd is cached' );
+		assert.ok( cached.some( s => s === 'dir:true' ), 'replayed outputDirectory' );
+		assert.ok( cached.some( s => s.includes( '/' ) ), 'replayed stdout from action.log (' + cached.join( '' ).trim() + ')' );
+
 		// The desk-web test pages are served by the desk server at /web/... via
 		// the "web" dataDir declared in desk/extensions/desk-web.json.
 		const auth = 'Basic ' + Buffer.from( process.env.USER + ':password' ).toString( 'base64' );
@@ -91,7 +116,7 @@ test( 'desk-web works against a live desk server (DESK_ROOTDIR)', async () => {
 		assert.strictEqual( bundle.status, 200, 'bundle served at /web/desk-web.mjs' );
 
 		// Promise reject + kill functionality
-		const run = Actions.execute( { action : 'sleep', time_in_seconds : 10 }, { stream : true } );
+		const run = Actions.execute( { action : 'sleep', time_in_seconds : 10 }, { listener : () => {} } );
 		setTimeout( () => run.kill(), 500 );
 		await assert.rejects( run, err => err.killed === true || /killed/.test( err.message ) );
 

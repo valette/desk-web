@@ -67,13 +67,16 @@ Singleton RPC dispatcher over Socket.IO.
 #### `execute()` and the augmented Promise
 
 `execute(params, options)` returns a native `Promise` with extra members, giving
-you streaming and kill support without callbacks:
+you kill support without callbacks. Streaming output is **launch-time only** —
+pass a `listener` to receive `actionEvent` messages (stdout/stderr/outputDirectory):
 
 ```js
-const run = Actions.execute( { action : 'sleep', time_in_seconds : 10 }, { stream : true } );
+const run = Actions.execute(
+  { action : 'sleep', time_in_seconds : 10 },
+  { listener : msg => ... }   // msg = {handle,type,data}; stdout/stderr/outputDirectory
+);
 
 run.handle;              // action handle, available synchronously
-run.stream( msg => ... ) // register per-run stdout/stderr listener (msg = {handle,type,data})
 await run.kill();        // send { manage:'kill', actionHandle:handle }
 
 const res = await run;   // resolves with the response on success
@@ -82,8 +85,14 @@ const res = await run;   // resolves with the response on success
 - The promise **resolves** with the full response on success.
 - It **rejects** on error or kill. The thrown `Error` carries `.response`,
   `.status` and `.killed` so nothing is lost.
-- `options.stream` routes `actionEvent` messages (stdout/stderr/outputDirectory)
-  for that run to any `run.stream(cb)` subscribers.
+- The server only streams when the request carries `stream: true`, so the
+  `listener` must be supplied **at launch** — it cannot be attached to an
+  already-running action.
+- The server streams only for a **live** child process. When a result comes back
+  **cached** (`status: 'CACHED'`) — or in static/recorded mode with no socket —
+  no `actionEvent` is emitted; desk-web instead replays the persisted
+  `action.log` / `action.err` files to the `listener` (an `outputDirectory`
+  message, then the log lines as `stdout`/`stderr`).
 
 #### Static / recorded mode
 
@@ -169,7 +178,8 @@ npm run test:integration   # launches a real desk server (DESK_ROOTDIR) and test
 
 The integration test spawns the desk server with a temporary `DESK_ROOTDIR` on
 a free `PORT`, connects with default credentials (`$USER` / `password`), and
-verifies actions, filesystem round-trips, promise resolution, and kill.
+verifies actions, filesystem round-trips, promise resolution, streaming output,
+cached-result log replay, and kill.
 
 ## How it relates to DESK
 

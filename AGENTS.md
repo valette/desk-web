@@ -30,8 +30,11 @@ modules so web apps can talk to a desk server without the full UI stack.
    success and **rejects** on error or kill; attach `.response`, `.status`,
    `.killed` to the thrown `Error` (see `toError` in `src/actions.js`).
 4. **The augmented execute promise.** `execute()` must return a native Promise
-   augmented with `.handle`, `.stream(cb)` and `.kill()` so streaming and
-   cancellation work without callbacks. Keep this contract.
+   augmented with `.handle` and `.kill()` so cancellation works without
+   callbacks. Streaming output is **launch-time only**: the server only emits
+   `actionEvent` when the request carries `stream: true`, so the stream
+   listener must be passed in `execute(params, { listener: cb })`, not attached
+   after the run starts. Keep this contract.
 5. **Paths are root-relative and restricted.** Server file paths must start
    with an exposed directory (`data/`, `code/`, ...). Root (`/`) or arbitrary
    absolute paths are rejected server-side ("path not allowed"). Prefer
@@ -60,7 +63,8 @@ modules so web apps can talk to a desk server without the full UI stack.
 - Unit tests: `npm test` (node:test, `test/*.test.js`)
 - Integration test: `npm run test:integration`
   (spawns the real desk server with a temp `DESK_ROOTDIR` + free `PORT`,
-  connects with `$USER`/`password`, exercises actions/fs/kill)
+  connects with `$USER`/`password`, exercises actions/fs/kill plus streaming
+  output and cached-result log replay)
 
 ## Conventions
 
